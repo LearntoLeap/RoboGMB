@@ -6,10 +6,13 @@ const arenasGrid = document.getElementById("arenas");
 const btnScoring = document.getElementById("btn-scoring");
 const btnKnockout = document.getElementById("btn-knockout");
 const btnClear = document.getElementById("clear-all");
+const btnPublish = document.getElementById("publish");
+const dirtyFlag = document.getElementById("dirty-flag");
 
-let state = defaultState();
-let writeTimer = null;
-let suppressRender = false;
+// published = trạng thái đang hiện trên các màn hình Display
+// draft     = trạng thái admin đang gõ tại chỗ (chưa đẩy)
+let published = defaultState();
+let draft = defaultState();
 
 // ------- Build arena cards -------
 function buildCards() {
@@ -31,30 +34,20 @@ function buildCards() {
   ARENAS.forEach(n => {
     const t1 = document.getElementById(`t1-${n}`);
     const t2 = document.getElementById(`t2-${n}`);
-    t1.addEventListener("input", () => updateLocal(n, "team1", t1.value));
-    t2.addEventListener("input", () => updateLocal(n, "team2", t2.value));
+    t1.addEventListener("input", () => updateDraft(n, "team1", t1.value));
+    t2.addEventListener("input", () => updateDraft(n, "team2", t2.value));
   });
 }
 
-function updateLocal(arena, field, value) {
-  if (!state.arenas[arena]) state.arenas[arena] = { team1: "", team2: "" };
-  state.arenas[arena][field] = value || "";
-  scheduleWrite();
+function updateDraft(arena, field, value) {
+  if (!draft.arenas[arena]) draft.arenas[arena] = { team1: "", team2: "" };
+  draft.arenas[arena][field] = value || "";
+  refreshDirty();
 }
 
-function scheduleWrite() {
-  clearTimeout(writeTimer);
-  writeTimer = setTimeout(() => {
-    writeState(state).catch(err => {
-      console.error(err);
-      setStatus("offline", "Lỗi ghi");
-    });
-  }, 250);
-}
-
-// ------- Round toggle -------
+// ------- Round toggle (cũng nằm trong draft) -------
 function setRoundUI(round) {
-  state.round = round;
+  draft.round = round;
   btnScoring.classList.toggle("active", round === "scoring");
   btnKnockout.classList.toggle("active", round === "knockout");
   ARENAS.forEach(n => {
@@ -67,21 +60,59 @@ function setRoundUI(round) {
   });
 }
 
-btnScoring.addEventListener("click", () => { setRoundUI("scoring"); scheduleWrite(); });
-btnKnockout.addEventListener("click", () => { setRoundUI("knockout"); scheduleWrite(); });
+btnScoring.addEventListener("click", () => { setRoundUI("scoring"); refreshDirty(); });
+btnKnockout.addEventListener("click", () => { setRoundUI("knockout"); refreshDirty(); });
 
 btnClear.addEventListener("click", () => {
-  if (!confirm("Xoá toàn bộ tên đội ở 4 sa bàn?")) return;
-  ARENAS.forEach(n => { state.arenas[n] = { team1: "", team2: "" }; });
-  renderFromState();
-  scheduleWrite();
+  if (!confirm("Xoá toàn bộ tên đội ở 4 sa bàn (chỉ ở nháp, chưa đẩy)?")) return;
+  ARENAS.forEach(n => { draft.arenas[n] = { team1: "", team2: "" }; });
+  renderInputsFromDraft();
+  refreshDirty();
 });
 
-// ------- Render full state into DOM (used on first load + on remote change) -------
-function renderFromState() {
-  setRoundUI(state.round || "scoring");
+// ------- Publish -------
+btnPublish.addEventListener("click", async () => {
+  btnPublish.disabled = true;
+  const prevText = btnPublish.textContent;
+  btnPublish.textContent = "Đang đẩy…";
+  try {
+    await writeState(draft);
+    published = deepClone(draft);
+    refreshDirty();
+    setStatus("online", "Đã đẩy lên màn hình");
+  } catch (e) {
+    console.error(e);
+    setStatus("offline", "Đẩy thất bại");
+    btnPublish.disabled = false;
+  } finally {
+    btnPublish.textContent = prevText;
+  }
+});
+
+// ------- Dirty state -------
+function isDirty() {
+  return JSON.stringify(draft) !== JSON.stringify(published);
+}
+function refreshDirty() {
+  const dirty = isDirty();
+  btnPublish.disabled = !dirty;
+  dirtyFlag.classList.toggle("hidden", !dirty);
+
+  // Mark từng arena card có thay đổi
   ARENAS.forEach(n => {
-    const a = (state.arenas && state.arenas[n]) || { team1: "", team2: "" };
+    const card = document.querySelector(`.arena[data-arena="${n}"]`);
+    if (!card) return;
+    const d = draft.arenas[n] || {};
+    const p = published.arenas[n] || {};
+    const arenaDirty = (d.team1 || "") !== (p.team1 || "") || (d.team2 || "") !== (p.team2 || "");
+    card.classList.toggle("dirty", arenaDirty);
+  });
+}
+
+// ------- Render -------
+function renderInputsFromDraft() {
+  ARENAS.forEach(n => {
+    const a = draft.arenas[n] || { team1: "", team2: "" };
     const t1 = document.getElementById(`t1-${n}`);
     const t2 = document.getElementById(`t2-${n}`);
     if (document.activeElement !== t1) t1.value = a.team1 || "";
@@ -94,22 +125,35 @@ function setStatus(cls, text) {
   statusEl.textContent = text;
 }
 
+function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
 // ------- Boot -------
 async function boot() {
   buildCards();
-  setRoundUI("scoring");
   try {
-    state = await fetchState();
-    renderFromState();
+    published = await fetchState();
+    draft = deepClone(published);
+    setRoundUI(draft.round || "scoring");
+    renderInputsFromDraft();
+    refreshDirty();
     setStatus("online", "Đã kết nối");
   } catch (e) {
     console.error(e);
     setStatus("offline", "Không tải được dữ liệu");
     return;
   }
+
+  // Realtime: nếu có máy khác (hoặc tab khác) đẩy lên, cập nhật "published".
+  // Nếu admin chưa có thay đổi nháp → đồng bộ luôn vào draft.
   subscribeState((next) => {
-    state = next;
-    renderFromState();
+    const wasDirty = isDirty();
+    published = next;
+    if (!wasDirty) {
+      draft = deepClone(next);
+      setRoundUI(draft.round || "scoring");
+      renderInputsFromDraft();
+    }
+    refreshDirty();
   });
 }
 
