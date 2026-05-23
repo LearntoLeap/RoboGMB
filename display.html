@@ -6,41 +6,55 @@
   <title>Sa bàn · Display</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="display-page">
-  <div id="display-root" class="display-root loading">
-    <div class="arena-tag">Sa bàn <span id="arena-no">–</span></div>
-    <div class="round-tag" id="round-tag">Đang tải…</div>
+  <div id="display-root" class="display-root">
+    <header class="d-header">
+      <div class="arena-tag">Sa bàn <span id="arena-no">–</span></div>
+      <div class="round-tag" id="round-tag">Đang tải…</div>
+    </header>
 
-    <!-- Scoring view -->
-    <div id="view-scoring" class="view view-scoring hidden">
-      <div class="label">Đội thi</div>
-      <div class="team-name big" id="scoring-team">—</div>
-    </div>
-
-    <!-- Knockout view -->
-    <div id="view-knockout" class="view view-knockout hidden">
-      <div class="vs-wrap">
-        <div class="side side-left">
-          <div class="label">Đội 1</div>
-          <div class="team-name" id="ko-team1">—</div>
+    <main class="d-split">
+      <!-- LEFT: team info -->
+      <section class="d-pane d-team">
+        <div id="view-scoring" class="view view-scoring hidden">
+          <div class="label">Đội thi</div>
+          <div class="team-name big" id="scoring-team">—</div>
         </div>
-        <div class="vs">VS</div>
-        <div class="side side-right">
-          <div class="label">Đội 2</div>
-          <div class="team-name" id="ko-team2">—</div>
+
+        <div id="view-knockout" class="view view-knockout hidden">
+          <div class="ko-stack">
+            <div class="ko-side">
+              <div class="label">Đội 1</div>
+              <div class="team-name" id="ko-team1">—</div>
+            </div>
+            <div class="vs">VS</div>
+            <div class="ko-side">
+              <div class="label">Đội 2</div>
+              <div class="team-name" id="ko-team2">—</div>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <div id="view-empty" class="view view-empty">
-      <div class="empty-text">Chờ ban tổ chức cập nhật…</div>
-    </div>
+        <div id="view-empty" class="view view-empty">
+          <div class="empty-text">Chờ ban tổ chức…</div>
+        </div>
+      </section>
 
-    <div class="brand">Learn to Leap</div>
-    <div class="status-pill" id="status">connecting</div>
+      <!-- RIGHT: timer -->
+      <section class="d-pane d-timer">
+        <div class="label">Thời gian</div>
+        <div class="timer-big" id="timer-big">03:00</div>
+        <div class="timer-state" id="timer-state">Đã đặt</div>
+      </section>
+    </main>
+
+    <footer class="d-footer">
+      <span class="brand">Learn to Leap</span>
+      <span class="status-pill" id="status">connecting</span>
+    </footer>
   </div>
 
   <script type="module" src="js/display.js"></script>

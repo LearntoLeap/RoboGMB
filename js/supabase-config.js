@@ -133,6 +133,35 @@ export function defaultState() {
       2: { team1: "", team2: "" },
       3: { team1: "", team2: "" },
       4: { team1: "", team2: "" }
+    },
+    timer: {
+      duration: 180,         // tổng giây ban đầu (vd 03:00)
+      endsAt: null,          // ISO string khi đang chạy
+      pausedRemaining: 180,  // giây còn lại lúc tạm dừng
+      running: false
     }
   };
+}
+
+export function getTimerRemaining(timer) {
+  if (!timer) return 0;
+  if (timer.running && timer.endsAt) {
+    const ms = new Date(timer.endsAt).getTime() - Date.now();
+    return Math.max(0, Math.ceil(ms / 1000));
+  }
+  return Math.max(0, timer.pausedRemaining || 0);
+}
+
+export function formatMMSS(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const m = Math.floor(s / 60);
+  const ss = s % 60;
+  return `${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+export function parseMMSS(str) {
+  if (!str) return 0;
+  const m = String(str).match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!m) return 0;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
 }
