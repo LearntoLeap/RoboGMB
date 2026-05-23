@@ -136,3 +136,18 @@ export function defaultState() {
     }
   };
 }
+
+// ===== Timer helpers (dùng ở display.js)
+export function formatMMSS(totalSeconds) {
+  const s = Math.max(0, Math.floor(totalSeconds || 0));
+  const m = Math.floor(s / 60);
+  const ss = s % 60;
+  return `${String(m).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
+}
+
+export function parseMMSS(str) {
+  if (!str) return 0;
+  const m = String(str).match(/^(\d{1,2}):(\d{1,2})$/);
+  if (!m) return 0;
+  return parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+}
