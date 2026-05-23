@@ -131,7 +131,8 @@ function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
 async function boot() {
   buildCards();
   try {
-    published = await fetchState();
+    const { state } = await fetchState();
+    published = state;
     draft = deepClone(published);
     setRoundUI(draft.round || "scoring");
     renderInputsFromDraft();
@@ -143,18 +144,22 @@ async function boot() {
     return;
   }
 
-  // Realtime: nếu có máy khác (hoặc tab khác) đẩy lên, cập nhật "published".
-  // Nếu admin chưa có thay đổi nháp → đồng bộ luôn vào draft.
-  subscribeState((next) => {
-    const wasDirty = isDirty();
-    published = next;
-    if (!wasDirty) {
-      draft = deepClone(next);
-      setRoundUI(draft.round || "scoring");
-      renderInputsFromDraft();
+  subscribeState(
+    (next) => {
+      const wasDirty = isDirty();
+      published = next;
+      if (!wasDirty) {
+        draft = deepClone(next);
+        setRoundUI(draft.round || "scoring");
+        renderInputsFromDraft();
+      }
+      refreshDirty();
+    },
+    (mode, text) => {
+      if (mode === "offline") setStatus("offline", "offline");
+      else setStatus("online", text);
     }
-    refreshDirty();
-  });
+  );
 }
 
 boot();

@@ -60,7 +60,7 @@ function setStatus(text) { statusEl.textContent = text; }
 
 async function boot() {
   try {
-    const state = await fetchState();
+    const { state } = await fetchState();
     render(state);
     setStatus("● live");
   } catch (e) {
@@ -68,10 +68,10 @@ async function boot() {
     setStatus("offline");
     return;
   }
-  subscribeState((next) => {
-    render(next);
-    setStatus("● live");
-  });
+  subscribeState(
+    (next) => render(next),
+    (mode, text) => setStatus(text)
+  );
 }
 
 boot();

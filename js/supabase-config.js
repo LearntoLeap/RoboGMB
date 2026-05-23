@@ -26,9 +26,10 @@
 //    alter publication supabase_realtime add table competition;
 //
 // 2) Database → Replication → bật "Realtime" cho bảng `competition` (nếu chưa).
+//    (Nếu không bật Realtime cũng OK — code có polling fallback 1.5s.)
 // ============================================================
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.46.1";
 
 const SUPABASE_URL = "https://ddjujhydpvnsnckwnmyf.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MXf0XLXa51K7Ex_vUTagYg_XjPeRIFK";
@@ -42,11 +43,11 @@ export const ROW_ID = 1;
 export async function fetchState() {
   const { data, error } = await supabase
     .from("competition")
-    .select("data")
+    .select("data, updated_at")
     .eq("id", ROW_ID)
     .single();
   if (error) throw error;
-  return data?.data || defaultState();
+  return { state: data?.data || defaultState(), updatedAt: data?.updated_at || null };
 }
 
 export async function writeState(state) {
@@ -57,19 +58,69 @@ export async function writeState(state) {
   if (error) throw error;
 }
 
-export function subscribeState(onChange) {
+// Subscribe via Realtime + polling fallback (1.5s).
+// onChange(state) fires whenever state actually changes.
+// onStatus("realtime" | "polling" | "offline", text) for UI badge.
+export function subscribeState(onChange, onStatus = () => {}) {
+  let lastUpdatedAt = null;
+  let lastStateStr = "";
+
+  function emit(state, updatedAt) {
+    const s = JSON.stringify(state);
+    if (s === lastStateStr) return;
+    lastStateStr = s;
+    lastUpdatedAt = updatedAt;
+    onChange(state);
+  }
+
+  // ---- Realtime
+  let realtimeOk = false;
   const channel = supabase
-    .channel("competition-state")
+    .channel("competition-state-" + Math.random().toString(36).slice(2))
     .on(
       "postgres_changes",
       { event: "UPDATE", schema: "public", table: "competition", filter: `id=eq.${ROW_ID}` },
       (payload) => {
         const next = payload?.new?.data;
-        if (next) onChange(next);
+        const at = payload?.new?.updated_at;
+        if (next) emit(next, at);
       }
     )
-    .subscribe();
-  return channel;
+    .subscribe((status) => {
+      console.log("[supabase] channel status:", status);
+      if (status === "SUBSCRIBED") {
+        realtimeOk = true;
+        onStatus("realtime", "● realtime");
+      } else if (status === "CHANNEL_ERROR" || status === "TIMED_OUT" || status === "CLOSED") {
+        realtimeOk = false;
+        onStatus("polling", "● polling");
+      }
+    });
+
+  // ---- Polling fallback: always run, cheap (one row).
+  // If realtime is working, polling will be silent (no diff). If not, this saves us.
+  const pollTimer = setInterval(async () => {
+    try {
+      const { state, updatedAt } = await fetchState();
+      if (updatedAt && updatedAt !== lastUpdatedAt) {
+        emit(state, updatedAt);
+      } else if (!lastUpdatedAt) {
+        // first poll establishes baseline if realtime hasn't fired yet
+        emit(state, updatedAt);
+      }
+      if (!realtimeOk) onStatus("polling", "● polling");
+    } catch (e) {
+      console.warn("[supabase] poll error:", e?.message || e);
+      onStatus("offline", "offline");
+    }
+  }, 1500);
+
+  return {
+    unsubscribe() {
+      clearInterval(pollTimer);
+      supabase.removeChannel(channel);
+    }
+  };
 }
 
 export function defaultState() {
