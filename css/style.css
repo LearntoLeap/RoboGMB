@@ -323,7 +323,23 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   background: linear-gradient(135deg, var(--p-500), var(--p-700));
   color: #fff; border-color: transparent;
 }
-.d-header .status-pill { margin-left: auto; }
+.d-header .status-pill { margin-left: 0; }
+.d-header .mute-btn { margin-left: auto; }
+
+.mute-btn {
+  border: 1.5px solid var(--p-200);
+  background: #fff;
+  width: 2.4vw; height: 2.4vw;
+  min-width: 36px; min-height: 36px;
+  border-radius: 50%;
+  font-size: 1.2vw;
+  cursor: pointer;
+  display: inline-grid; place-items: center;
+  transition: background .15s, transform .1s, border-color .15s;
+  padding: 0; line-height: 1;
+}
+.mute-btn:hover { background: var(--p-50); border-color: var(--p-300); transform: scale(1.05); }
+.mute-btn:active { transform: scale(.95); }
 
 /* Split panes */
 .d-split {

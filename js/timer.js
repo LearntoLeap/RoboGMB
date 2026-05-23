@@ -3,6 +3,7 @@
 // Chạy ngay khi DOM ready, kể cả khi mạng Supabase fail.
 // ============================================================
 import { toast, shake, confettiBurst, glitch, showCountdownNumber, flashOverlay } from "./fx.js";
+import { soundStart, soundStop, soundFinalBuzzer, soundTick, soundReset } from "./sound.js";
 
 function formatMMSS(totalSeconds) {
   const s = Math.max(0, Math.floor(totalSeconds || 0));
@@ -68,6 +69,10 @@ export function initTimer(arenaNo) {
       timer.pausedRemaining = 0;
       saveTimer();
       flashStop();
+      shake("lg");
+      glitch(timerBig, 700);
+      toast("Hết giờ!", "stop", 2500);
+      soundFinalBuzzer();
       updateToggleBtn();
     }
 
@@ -82,10 +87,8 @@ export function initTimer(arenaNo) {
       if (rem >= 1 && rem <= 5 && rem !== lastCountdownNum) {
         lastCountdownNum = rem;
         showCountdownNumber(rem);
-        if (rem === 1) {
-          // chuẩn bị bùm cuối
-          setTimeout(() => shake("sm"), 200);
-        }
+        soundTick();
+        if (rem === 1) setTimeout(() => shake("sm"), 200);
       } else if (rem > 5) {
         lastCountdownNum = null;
       }
@@ -121,11 +124,12 @@ export function initTimer(arenaNo) {
     timer.pausedRemaining = rem;
     timer.running = true;
     saveTimer();
-    // FX: flash + shake + confetti + toast
+    // FX: flash + shake + confetti + toast + sound
     flashStart();
     shake("md");
     confettiBurst(80);
     toast("Trận đấu bắt đầu!", "start", 2500);
+    soundStart();
     renderTimer();
     updateToggleBtn();
   }
@@ -135,11 +139,17 @@ export function initTimer(arenaNo) {
     timer.pausedRemaining = rem;
     timer.running = false;
     saveTimer();
-    // FX: flash + shake mạnh + glitch + toast
+    // FX: flash + shake mạnh + glitch + toast + sound
     flashStop();
     shake("lg");
     glitch(timerBig, 700);
-    toast(rem === 0 ? "Hết giờ!" : "Đã tạm dừng", "stop", 2500);
+    if (rem === 0) {
+      toast("Hết giờ!", "stop", 2500);
+      soundFinalBuzzer();
+    } else {
+      toast("Đã tạm dừng", "stop", 2500);
+      soundStop();
+    }
     renderTimer();
     updateToggleBtn();
   }
@@ -150,6 +160,7 @@ export function initTimer(arenaNo) {
     saveTimer();
     flashReset();
     toast("Đã đặt lại đồng hồ", "info", 1800);
+    soundReset();
     renderTimer();
     updateToggleBtn();
   }

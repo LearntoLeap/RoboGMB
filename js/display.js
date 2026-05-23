@@ -3,6 +3,7 @@
 
 import { initTimer } from "./timer.js";
 import { toast } from "./fx.js";
+import { soundDing, isMuted, toggleMute } from "./sound.js";
 
 const params = new URLSearchParams(location.search);
 const arenaNo = parseInt(params.get("arena") || "1", 10);
@@ -22,6 +23,22 @@ const errBox      = $("err-box");
 arenaNoEl.textContent = arenaNo;
 document.title = `Sa bàn ${arenaNo} · Display`;
 
+// ===== Mute button =====
+const muteBtn = $("btn-mute");
+function updateMuteIcon() {
+  if (!muteBtn) return;
+  muteBtn.textContent = isMuted() ? "🔇" : "🔊";
+  muteBtn.title = isMuted() ? "Bật âm thanh" : "Tắt âm thanh";
+}
+if (muteBtn) {
+  updateMuteIcon();
+  muteBtn.addEventListener("click", () => {
+    const nowMuted = toggleMute();
+    updateMuteIcon();
+    if (!nowMuted) soundDing();
+  });
+}
+
 function setStatus(text) { if (statusEl) statusEl.textContent = text; }
 function showErr(msg) {
   if (!errBox) return;
@@ -36,17 +53,22 @@ function renderTeams(state) {
   const team1 = (a.team1 || "").trim();
   const team2 = (a.team2 || "").trim();
 
-  // ===== Toast khi có đội mới (không hiện lần load đầu) =====
+  // ===== Toast + sound khi có đội mới (không hiện lần load đầu) =====
   if (!isFirstRender) {
+    let dinged = false;
     if (round !== lastRound) {
       toast(`Chuyển sang ${round === "knockout" ? "Vòng đối kháng" : "Vòng tính điểm"}`, "info", 2500);
+      dinged = true;
     }
     if (team1 && team1 !== lastTeam1) {
       toast(`Đội mới: ${team1}`, "team", 3000);
+      dinged = true;
     }
     if (round === "knockout" && team2 && team2 !== lastTeam2) {
       toast(`Đối thủ: ${team2}`, "team", 3000);
+      dinged = true;
     }
+    if (dinged) soundDing();
   }
   lastTeam1 = team1; lastTeam2 = team2; lastRound = round;
   isFirstRender = false;
