@@ -6,7 +6,7 @@
   <title>Admin · Nhập đội thi</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="admin-page">
@@ -17,38 +17,18 @@
   </header>
 
   <main class="admin-wrap">
-    <!-- Round + Timer in 1 row -->
-    <div class="row-2">
-      <section class="card round-card">
-        <h2>Vòng đấu</h2>
-        <div class="round-toggle" role="tablist">
-          <button id="btn-scoring" class="round-btn active" data-round="scoring">
-            <span class="dot"></span> Vòng tính điểm
-          </button>
-          <button id="btn-knockout" class="round-btn" data-round="knockout">
-            <span class="dot"></span> Vòng đối kháng
-          </button>
-        </div>
-        <p class="hint">Áp dụng cho cả 4 màn hình sa bàn.</p>
-      </section>
-
-      <section class="card timer-card">
-        <h2>Đồng hồ thi đấu</h2>
-        <div class="timer-row">
-          <div class="timer-display" id="timer-display">03:00</div>
-          <div class="timer-set">
-            <label>Đặt giờ (mm:ss)</label>
-            <input type="text" id="timer-input" value="03:00" placeholder="03:00" maxlength="5" />
-          </div>
-        </div>
-        <div class="timer-controls">
-          <button id="btn-start" class="btn-primary sm">▶ Bắt đầu</button>
-          <button id="btn-pause" class="btn-ghost sm" disabled>⏸ Tạm dừng</button>
-          <button id="btn-reset" class="btn-ghost sm">↺ Reset</button>
-        </div>
-        <p class="hint">Thao tác đẩy lên màn hình ngay lập tức.</p>
-      </section>
-    </div>
+    <section class="card round-card">
+      <h2>Vòng đấu hiện tại</h2>
+      <div class="round-toggle" role="tablist">
+        <button id="btn-scoring" class="round-btn active" data-round="scoring">
+          <span class="dot"></span> Vòng tính điểm
+        </button>
+        <button id="btn-knockout" class="round-btn" data-round="knockout">
+          <span class="dot"></span> Vòng đối kháng
+        </button>
+      </div>
+      <p class="hint">Lựa chọn sẽ áp dụng đồng thời cho 4 màn hình sa bàn.</p>
+    </section>
 
     <section class="arenas-grid" id="arenas">
       <!-- 4 arena cards rendered by JS -->
