@@ -23,7 +23,9 @@
 //    create policy "anon read"  on competition for select using (true);
 //    create policy "anon write" on competition for update using (true) with check (true);
 //
-//    alter publication supabase_realtime add table competition;
+//    do $$ begin
+//      alter publication supabase_realtime add table competition;
+//    exception when duplicate_object then null; end $$;
 //
 // 2) Database → Replication → bật "Realtime" cho bảng `competition` (nếu chưa).
 //    (Nếu không bật Realtime cũng OK — code có polling fallback 1.5s.)

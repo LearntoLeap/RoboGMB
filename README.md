@@ -32,7 +32,9 @@ drop policy if exists "anon write" on competition;
 create policy "anon read"  on competition for select using (true);
 create policy "anon write" on competition for update using (true) with check (true);
 
-alter publication supabase_realtime add table competition;
+do $$ begin
+  alter publication supabase_realtime add table competition;
+exception when duplicate_object then null; end $$;
 ```
 
 > Sau cuộc thi, có thể đổi policy `using (true)` thành `using (false)` để khoá ghi.
