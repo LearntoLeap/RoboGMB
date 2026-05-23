@@ -41,6 +41,11 @@
     </section>
   </main>
 
-  <script type="module" src="js/input.js"></script>
+  <script>
+    window.addEventListener("error", (e) => {
+      alert(`[JS ERROR]\n${e.message}\n${e.filename}:${e.lineno}`);
+    });
+  </script>
+  <script type="module" src="js/input.js?v=8"></script>
 </body>
 </html>

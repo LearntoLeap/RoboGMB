@@ -220,20 +220,38 @@ function flashReset() { flash("fx-reset", "<span>RESET</span>", 600); }
 
 // ===== Boot
 async function boot() {
+  console.log("[display] boot start, arena =", arenaNo);
   updateToggleBtn();
   renderTimer();
+  console.log("[display] timer UI initialized");
+
   try {
     const { state } = await fetchState();
+    console.log("[display] fetched initial state:", state);
     renderTeams(state);
-    setStatus("● live");
+    setStatus("● connected");
   } catch (e) {
-    console.error(e);
-    setStatus("offline");
+    console.error("[display] fetchState failed:", e);
+    setStatus("offline: " + (e.message || "err"));
+    const box = document.getElementById("err-box");
+    if (box) {
+      box.classList.remove("hidden");
+      box.textContent = "[Supabase fetch lỗi]\n" + (e.message || e);
+    }
   }
+
   subscribeState(
-    (next) => renderTeams(next),
-    (mode, text) => setStatus(text)
+    (next) => {
+      console.log("[display] state update received:", next);
+      renderTeams(next);
+    },
+    (mode, text) => {
+      console.log("[display] sync mode:", mode);
+      setStatus(text);
+    }
   );
+
   setInterval(renderTimer, 200);
+  console.log("[display] boot done");
 }
 boot();

@@ -74,8 +74,24 @@
     </footer>
 
     <div id="fx-overlay" class="fx-overlay"></div>
+    <pre id="err-box" class="err-box hidden"></pre>
   </div>
 
-  <script type="module" src="js/display.js"></script>
+  <script>
+    // Hiện lỗi JS trực tiếp lên màn hình (cho dễ debug khi không mở được F12)
+    window.addEventListener("error", (e) => {
+      const box = document.getElementById("err-box");
+      if (!box) return;
+      box.classList.remove("hidden");
+      box.textContent = `[JS ERROR] ${e.message}\n${e.filename}:${e.lineno}`;
+    });
+    window.addEventListener("unhandledrejection", (e) => {
+      const box = document.getElementById("err-box");
+      if (!box) return;
+      box.classList.remove("hidden");
+      box.textContent = `[PROMISE] ${e.reason?.message || e.reason}`;
+    });
+  </script>
+  <script type="module" src="js/display.js?v=8"></script>
 </body>
 </html>
