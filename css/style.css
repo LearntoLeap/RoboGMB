@@ -387,39 +387,76 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   font-size: 1.8vw; color: var(--muted); font-weight: 600;
 }
 
-/* Timer pane */
+/* Timer pane — layout mirror team pane: hero centered, controls at bottom */
+.d-timer {
+  justify-content: space-between;
+  padding-top: 2.4vw;
+  padding-bottom: 1.8vw;
+}
+.timer-hero {
+  flex: 1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  width: 100%;
+}
+
 .timer-big {
   font-family: var(--mono);
-  font-size: 9vw;
-  font-weight: 700;
-  letter-spacing: .01em;
-  line-height: 1;
-  color: var(--p-700);
+  font-size: 6.5vw;            /* MATCH .team-name.big */
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  background: linear-gradient(135deg, var(--p-700), var(--p-400));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
   font-variant-numeric: tabular-nums;
-  transition: color .2s;
+  animation: pop .5s ease;
+  transition: filter .2s;
 }
-.timer-big.running { color: var(--p-600); }
-.timer-big.warn { color: var(--red-500); animation: pulse 1s ease-in-out infinite; }
-.timer-big.ended { color: var(--red-500); }
-.timer-big.paused { color: #92400e; }
+.timer-big.running {
+  background: linear-gradient(135deg, var(--p-600), var(--p-400));
+  -webkit-background-clip: text; background-clip: text;
+  color: transparent;
+}
+.timer-big.warn {
+  background: none;
+  -webkit-text-fill-color: var(--red-500);
+  color: var(--red-500);
+  animation: pulse 1s ease-in-out infinite;
+}
+.timer-big.ended {
+  background: none;
+  -webkit-text-fill-color: var(--red-500);
+  color: var(--red-500);
+}
+.timer-big.paused {
+  background: none;
+  -webkit-text-fill-color: #b45309;
+  color: #b45309;
+}
 .timer-state {
-  margin-top: .8vh;
+  margin-top: 1.2vh;
   font-size: 1vw; font-weight: 700;
-  color: var(--muted); letter-spacing: .15em;
+  color: var(--muted); letter-spacing: .2em;
   text-transform: uppercase;
 }
 
+/* Controls dock */
+.timer-controls-wrap {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1.2vh;
+  width: 100%;
+}
 .timer-set-row {
   display: flex; align-items: center; gap: 8px;
-  margin-top: 2.5vh;
 }
 .timer-set-row input {
   font-family: var(--mono);
-  font-size: 1.6vw; font-weight: 700;
+  font-size: 1.4vw; font-weight: 700;
   border: 1.5px solid var(--p-200);
   border-radius: 10px;
-  padding: .55vw 1vw;
-  width: 7vw; text-align: center;
+  padding: .5vw .9vw;
+  width: 6.5vw; text-align: center;
   letter-spacing: .05em;
   color: var(--ink); background: #fff;
   transition: border-color .15s, box-shadow .15s;
@@ -430,10 +467,10 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
 }
 .adj { font-family: var(--mono); }
 
-.timer-actions { display: flex; gap: 1vw; margin-top: 2vh; }
+.timer-actions { display: flex; gap: 1vw; }
+
 .hotkey-hint {
-  margin-top: 1.5vh;
-  font-size: .8vw;
+  font-size: .75vw;
   color: var(--muted);
 }
 .hotkey-hint kbd {
@@ -443,7 +480,7 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   border-bottom-width: 2px;
   border-radius: 5px;
   padding: 1px 7px;
-  font-size: .8vw;
+  font-size: .75vw;
   color: var(--p-700);
   font-weight: 700;
 }

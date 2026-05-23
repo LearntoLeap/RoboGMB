@@ -46,22 +46,25 @@
 
       <!-- RIGHT: timer + controls -->
       <section class="d-pane d-timer">
-        <div class="label">Thời gian thi đấu</div>
-        <div class="timer-big" id="timer-big">03:00</div>
-        <div class="timer-state" id="timer-state">Sẵn sàng</div>
-
-        <div class="timer-set-row">
-          <button class="btn btn-ghost btn-sm adj" data-adj="-30">−30s</button>
-          <input type="text" id="timer-input" value="03:00" maxlength="5" />
-          <button class="btn btn-ghost btn-sm adj" data-adj="30">+30s</button>
+        <div class="timer-hero">
+          <div class="label">Thời gian</div>
+          <div class="timer-big" id="timer-big">03:00</div>
+          <div class="timer-state" id="timer-state">Sẵn sàng</div>
         </div>
 
-        <div class="timer-actions">
-          <button id="btn-toggle" class="btn btn-success btn-xl">▶ Bắt đầu</button>
-          <button id="btn-reset" class="btn btn-ghost btn-xl">↺ Reset</button>
-        </div>
-        <div class="hotkey-hint">
-          Phím tắt: <kbd>Space</kbd> bắt đầu/dừng · <kbd>R</kbd> reset
+        <div class="timer-controls-wrap">
+          <div class="timer-set-row">
+            <button class="btn btn-ghost btn-sm adj" data-adj="-30">−30s</button>
+            <input type="text" id="timer-input" value="03:00" maxlength="5" />
+            <button class="btn btn-ghost btn-sm adj" data-adj="30">+30s</button>
+          </div>
+          <div class="timer-actions">
+            <button id="btn-toggle" class="btn btn-success btn-xl">▶ Bắt đầu</button>
+            <button id="btn-reset" class="btn btn-ghost btn-xl">↺ Reset</button>
+          </div>
+          <div class="hotkey-hint">
+            <kbd>Space</kbd> bắt đầu/dừng · <kbd>R</kbd> reset
+          </div>
         </div>
       </section>
     </main>
