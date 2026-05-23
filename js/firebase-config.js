@@ -19,14 +19,17 @@ import {
   getDatabase, ref, onValue, set, update, get
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// Nếu Realtime Database tạo ở region Singapore (asia-southeast1),
+// đổi databaseURL thành:
+//   "https://robogmb-default-rtdb.asia-southeast1.firebasedatabase.app"
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY",
-  authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
-  databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
-  projectId: "PASTE_YOUR_PROJECT",
-  storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:xxxxxxxxxxxx"
+  apiKey: "AIzaSyAhrRa76VKujBVE02o4z1_fUWRoN4jAgyI",
+  authDomain: "robogmb.firebaseapp.com",
+  databaseURL: "https://robogmb-default-rtdb.firebaseio.com",
+  projectId: "robogmb",
+  storageBucket: "robogmb.firebasestorage.app",
+  messagingSenderId: "101945042924",
+  appId: "1:101945042924:web:4e5775cc5833229f7dc2c9"
 };
 
 const app = initializeApp(firebaseConfig);
