@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sa bàn · Display</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="display-page">
+  <div id="display-root" class="display-root loading">
+    <div class="arena-tag">Sa bàn <span id="arena-no">–</span></div>
+    <div class="round-tag" id="round-tag">Đang tải…</div>
+
+    <!-- Scoring view -->
+    <div id="view-scoring" class="view view-scoring hidden">
+      <div class="label">Đội thi</div>
+      <div class="team-name big" id="scoring-team">—</div>
+    </div>
+
+    <!-- Knockout view -->
+    <div id="view-knockout" class="view view-knockout hidden">
+      <div class="vs-wrap">
+        <div class="side side-left">
+          <div class="label">Đội 1</div>
+          <div class="team-name" id="ko-team1">—</div>
+        </div>
+        <div class="vs">VS</div>
+        <div class="side side-right">
+          <div class="label">Đội 2</div>
+          <div class="team-name" id="ko-team2">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-empty" class="view view-empty">
+      <div class="empty-text">Chờ ban tổ chức cập nhật…</div>
+    </div>
+
+    <div class="brand">Learn to Leap</div>
+    <div class="status-pill" id="status">connecting</div>
+  </div>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/display.js"></script>
+</body>
+</html>

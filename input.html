@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin · Nhập đội thi</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="admin-page">
+  <header class="topbar">
+    <a href="index.html" class="back">← Trang chủ</a>
+    <h1>Bảng điều khiển</h1>
+    <span id="status" class="status connecting">Đang kết nối…</span>
+  </header>
+
+  <main class="admin-wrap">
+    <section class="card round-card">
+      <h2>Vòng đấu hiện tại</h2>
+      <div class="round-toggle" role="tablist">
+        <button id="btn-scoring" class="round-btn active" data-round="scoring">
+          <span class="dot"></span> Vòng tính điểm
+        </button>
+        <button id="btn-knockout" class="round-btn" data-round="knockout">
+          <span class="dot"></span> Vòng đối kháng
+        </button>
+      </div>
+      <p class="hint">Lựa chọn sẽ áp dụng đồng thời cho 4 màn hình sa bàn.</p>
+    </section>
+
+    <section class="arenas-grid" id="arenas">
+      <!-- 4 arena cards rendered by JS -->
+    </section>
+
+    <section class="card actions">
+      <button id="clear-all" class="btn-ghost">Xoá toàn bộ tên đội</button>
+    </section>
+  </main>
+
+  <script type="module" src="js/firebase-config.js"></script>
+  <script type="module" src="js/input.js"></script>
+</body>
+</html>
