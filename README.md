@@ -3,47 +3,55 @@
 Hệ thống hiển thị trận đấu cho cuộc thi 2 vòng (vòng tính điểm + vòng đối kháng), gồm:
 
 - **1 trang Admin** (`input.html`): nhập tên đội cho 4 sa bàn, chọn vòng đấu.
-- **4 trang Display** (`display.html?arena=1..4`): mở trên mỗi thiết bị tại từng sa bàn, tự động hiển thị tên đội theo realtime.
+- **4 trang Display** (`display.html?arena=1..4`): mở trên mỗi thiết bị tại từng sa bàn, tự động hiển thị tên đội realtime.
 
-Đồng bộ qua **Firebase Realtime Database**. Toàn bộ frontend là tĩnh, deploy trên **GitHub Pages**.
+Đồng bộ qua **Supabase Realtime**. Frontend tĩnh, deploy trên **GitHub Pages**.
 
 ---
 
-## 1. Cấu hình Firebase (5 phút)
+## 1. Setup Supabase (1 lần — 2 phút)
 
-1. Truy cập <https://console.firebase.google.com> → **Add project** (tắt Google Analytics nếu muốn).
-2. Trong project, vào **Build → Realtime Database → Create database**.
-   - Chọn location gần nhất (Singapore).
-   - Chọn **Start in test mode** (đủ dùng cho cuộc thi vài giờ).
-3. Vào **Project settings (bánh răng) → General → Your apps → Add app → Web (`</>`)**, đặt tên, **Register app**.
-4. Copy đoạn `firebaseConfig` Firebase đưa ra.
-5. Mở [`js/firebase-config.js`](js/firebase-config.js) và dán đè vào object `firebaseConfig`.
-6. (Khuyến nghị) Vào **Realtime Database → Rules**, dán:
-   ```json
-   {
-     "rules": {
-       "competition": { ".read": true, ".write": true }
-     }
-   }
-   ```
-   → **Publish**.
+Vào [Supabase Dashboard](https://supabase.com/dashboard) → project của bạn → **SQL Editor** → **New query** → dán đoạn SQL sau → **Run**:
 
-> ⚠️ Sau cuộc thi nên xoá database hoặc đặt lại rules về `.read/.write: false`.
+```sql
+create table if not exists competition (
+  id int primary key,
+  data jsonb not null default '{}'::jsonb,
+  updated_at timestamptz default now()
+);
+
+insert into competition (id, data) values (
+  1,
+  '{"round":"scoring","arenas":{"1":{"team1":"","team2":""},"2":{"team1":"","team2":""},"3":{"team1":"","team2":""},"4":{"team1":"","team2":""}}}'::jsonb
+) on conflict (id) do nothing;
+
+alter table competition enable row level security;
+
+drop policy if exists "anon read"  on competition;
+drop policy if exists "anon write" on competition;
+create policy "anon read"  on competition for select using (true);
+create policy "anon write" on competition for update using (true) with check (true);
+
+alter publication supabase_realtime add table competition;
+```
+
+> Sau cuộc thi, có thể đổi policy `using (true)` thành `using (false)` để khoá ghi.
+
+Vào **Database → Replication** → kiểm tra bảng `competition` đã bật **Realtime** (ON). Nếu chưa, bật lên.
+
+Xong. Config đã sẵn trong [`js/supabase-config.js`](js/supabase-config.js).
 
 ---
 
 ## 2. Chạy local
 
-Vì dùng ES modules, mở bằng `file://` sẽ lỗi CORS. Chạy server tĩnh đơn giản:
+ES modules cần serve qua HTTP (không mở bằng `file://`):
 
 ```bash
-# Python 3
 python -m http.server 8080
-# hoặc Node
-npx serve .
+# hoặc:  npx serve .
 ```
 
-Sau đó mở:
 - Admin: <http://localhost:8080/input.html>
 - Display: <http://localhost:8080/display.html?arena=1>
 
@@ -51,40 +59,34 @@ Sau đó mở:
 
 ## 3. Deploy GitHub Pages
 
-Repo: `LearntoLeap/RoboGMB`
+Đã deploy tại: **https://learntoleap.github.io/RoboGMB/**
 
+Khi sửa code:
 ```bash
-git init
-git add .
-git commit -m "Initial competition display"
-git branch -M main
-git remote add origin https://github.com/LearntoLeap/RoboGMB.git
-git push -u origin main
+git add . && git commit -m "update" && git push
 ```
 
-Bật Pages: **Repo Settings → Pages → Source: Deploy from a branch → Branch: `main` / `(root)` → Save**.
-
-Sau 1-2 phút, app sẵn sàng tại:
-- `https://learntoleap.github.io/RoboGMB/`
-- Admin: `https://learntoleap.github.io/RoboGMB/input.html`
-- Display sa bàn 1: `https://learntoleap.github.io/RoboGMB/display.html?arena=1`
-- Display sa bàn 2..4: đổi `?arena=2`, `?arena=3`, `?arena=4`.
+GitHub Pages tự rebuild sau 30-60s.
 
 ---
 
 ## 4. Cách dùng trong cuộc thi
 
-1. Máy ban tổ chức → mở `input.html`.
-2. 4 thiết bị tại 4 sa bàn → mỗi máy mở `display.html?arena=N` tương ứng.
-3. Chọn **Vòng tính điểm** hoặc **Vòng đối kháng** ở Admin → áp dụng đồng thời cho cả 4 màn hình.
-4. Gõ tên đội vào ô tương ứng — màn hình sa bàn cập nhật trong < 1 giây.
+| Vai trò | Mở URL |
+|---|---|
+| Máy ban tổ chức | `https://learntoleap.github.io/RoboGMB/input.html` |
+| TV/Máy chiếu sa bàn 1 | `…/display.html?arena=1` |
+| TV/Máy chiếu sa bàn 2 | `…/display.html?arena=2` |
+| TV/Máy chiếu sa bàn 3 | `…/display.html?arena=3` |
+| TV/Máy chiếu sa bàn 4 | `…/display.html?arena=4` |
 
-- Vòng tính điểm: hiển thị 1 tên đội (lớn, ở giữa).
-- Vòng đối kháng: hiển thị 2 đội với chữ **VS** ở giữa.
+- Bấm **Vòng tính điểm** → cả 4 màn hiển thị **1 tên đội** (chữ rất lớn).
+- Bấm **Vòng đối kháng** → hiển thị **Đội 1 VS Đội 2**.
+- Gõ tên ở Admin → màn hình sa bàn cập nhật trong < 1 giây.
 
 ---
 
-## 5. Cấu trúc dự án
+## 5. Cấu trúc
 
 ```
 .
@@ -93,7 +95,7 @@ Sau 1-2 phút, app sẵn sàng tại:
 ├── display.html            # Hiển thị sa bàn (?arena=1..4)
 ├── css/style.css           # Theme trắng + tím
 └── js/
-    ├── firebase-config.js  # Cấu hình Firebase (cần điền)
+    ├── supabase-config.js  # Cấu hình + helpers
     ├── input.js            # Logic admin
     └── display.js          # Logic display
 ```

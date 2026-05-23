@@ -1,4 +1,4 @@
-import { compRef, arenaRef, roundRef, onValue, set, update, get } from "./firebase-config.js";
+import { fetchState, writeState, subscribeState, defaultState } from "./supabase-config.js";
 
 const ARENAS = [1, 2, 3, 4];
 const statusEl = document.getElementById("status");
@@ -7,9 +7,9 @@ const btnScoring = document.getElementById("btn-scoring");
 const btnKnockout = document.getElementById("btn-knockout");
 const btnClear = document.getElementById("clear-all");
 
-let currentRound = "scoring";
-let suppressWriteback = false;
-const debounceTimers = {};
+let state = defaultState();
+let writeTimer = null;
+let suppressRender = false;
 
 // ------- Build arena cards -------
 function buildCards() {
@@ -31,17 +31,21 @@ function buildCards() {
   ARENAS.forEach(n => {
     const t1 = document.getElementById(`t1-${n}`);
     const t2 = document.getElementById(`t2-${n}`);
-    t1.addEventListener("input", () => scheduleWrite(n, "team1", t1.value));
-    t2.addEventListener("input", () => scheduleWrite(n, "team2", t2.value));
+    t1.addEventListener("input", () => updateLocal(n, "team1", t1.value));
+    t2.addEventListener("input", () => updateLocal(n, "team2", t2.value));
   });
 }
 
-function scheduleWrite(arena, field, value) {
-  if (suppressWriteback) return;
-  const key = `${arena}:${field}`;
-  clearTimeout(debounceTimers[key]);
-  debounceTimers[key] = setTimeout(() => {
-    update(arenaRef(arena), { [field]: value || "" }).catch(err => {
+function updateLocal(arena, field, value) {
+  if (!state.arenas[arena]) state.arenas[arena] = { team1: "", team2: "" };
+  state.arenas[arena][field] = value || "";
+  scheduleWrite();
+}
+
+function scheduleWrite() {
+  clearTimeout(writeTimer);
+  writeTimer = setTimeout(() => {
+    writeState(state).catch(err => {
       console.error(err);
       setStatus("offline", "Lỗi ghi");
     });
@@ -50,10 +54,9 @@ function scheduleWrite(arena, field, value) {
 
 // ------- Round toggle -------
 function setRoundUI(round) {
-  currentRound = round;
+  state.round = round;
   btnScoring.classList.toggle("active", round === "scoring");
   btnKnockout.classList.toggle("active", round === "knockout");
-  // Disable team2 inputs in scoring round
   ARENAS.forEach(n => {
     const t2 = document.getElementById(`t2-${n}`);
     const lbl = document.querySelector(`#arenas .arena[data-arena="${n}"] .lbl-t2`);
@@ -64,55 +67,26 @@ function setRoundUI(round) {
   });
 }
 
-btnScoring.addEventListener("click", () => writeRound("scoring"));
-btnKnockout.addEventListener("click", () => writeRound("knockout"));
-function writeRound(r) {
-  set(roundRef, r).catch(err => {
-    console.error(err);
-    setStatus("offline", "Lỗi ghi");
-  });
-}
+btnScoring.addEventListener("click", () => { setRoundUI("scoring"); scheduleWrite(); });
+btnKnockout.addEventListener("click", () => { setRoundUI("knockout"); scheduleWrite(); });
 
 btnClear.addEventListener("click", () => {
   if (!confirm("Xoá toàn bộ tên đội ở 4 sa bàn?")) return;
-  const empty = { team1: "", team2: "" };
-  ARENAS.forEach(n => set(arenaRef(n), empty));
+  ARENAS.forEach(n => { state.arenas[n] = { team1: "", team2: "" }; });
+  renderFromState();
+  scheduleWrite();
 });
 
-// ------- Live read -------
-function bindLive() {
-  onValue(compRef, (snap) => {
-    const data = snap.val() || {};
-    suppressWriteback = true;
-    setRoundUI(data.round || "scoring");
-    ARENAS.forEach(n => {
-      const a = (data.arenas && data.arenas[n]) || {};
-      const t1 = document.getElementById(`t1-${n}`);
-      const t2 = document.getElementById(`t2-${n}`);
-      if (document.activeElement !== t1) t1.value = a.team1 || "";
-      if (document.activeElement !== t2) t2.value = a.team2 || "";
-    });
-    suppressWriteback = false;
-    setStatus("online", "Đã kết nối");
-  }, (err) => {
-    console.error(err);
-    setStatus("offline", "Mất kết nối");
+// ------- Render full state into DOM (used on first load + on remote change) -------
+function renderFromState() {
+  setRoundUI(state.round || "scoring");
+  ARENAS.forEach(n => {
+    const a = (state.arenas && state.arenas[n]) || { team1: "", team2: "" };
+    const t1 = document.getElementById(`t1-${n}`);
+    const t2 = document.getElementById(`t2-${n}`);
+    if (document.activeElement !== t1) t1.value = a.team1 || "";
+    if (document.activeElement !== t2) t2.value = a.team2 || "";
   });
-}
-
-// ------- Init seed (chạy 1 lần nếu DB rỗng) -------
-async function seedIfEmpty() {
-  try {
-    const snap = await get(compRef);
-    if (!snap.exists()) {
-      const init = {
-        round: "scoring",
-        arenas: { 1: { team1: "", team2: "" }, 2: { team1: "", team2: "" },
-                  3: { team1: "", team2: "" }, 4: { team1: "", team2: "" } }
-      };
-      await set(compRef, init);
-    }
-  } catch (e) { console.warn(e); }
 }
 
 function setStatus(cls, text) {
@@ -121,6 +95,22 @@ function setStatus(cls, text) {
 }
 
 // ------- Boot -------
-buildCards();
-setRoundUI("scoring");
-seedIfEmpty().then(bindLive);
+async function boot() {
+  buildCards();
+  setRoundUI("scoring");
+  try {
+    state = await fetchState();
+    renderFromState();
+    setStatus("online", "Đã kết nối");
+  } catch (e) {
+    console.error(e);
+    setStatus("offline", "Không tải được dữ liệu");
+    return;
+  }
+  subscribeState((next) => {
+    state = next;
+    renderFromState();
+  });
+}
+
+boot();
