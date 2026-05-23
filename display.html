@@ -43,23 +43,11 @@
         </div>
       </section>
 
-      <!-- RIGHT: timer (trọng tài tự bấm) -->
+      <!-- RIGHT: timer -->
       <section class="d-pane d-timer">
-        <div class="label">Thời gian thi đấu</div>
+        <div class="label">Thời gian</div>
         <div class="timer-big" id="timer-big">03:00</div>
-        <div class="timer-state" id="timer-state">Sẵn sàng</div>
-
-        <div class="timer-set-row">
-          <button class="adj" data-adj="-30">−30s</button>
-          <input type="text" id="timer-input" value="03:00" maxlength="5" />
-          <button class="adj" data-adj="30">+30s</button>
-        </div>
-
-        <div class="timer-actions">
-          <button id="btn-toggle" class="big-btn start">▶ Bắt đầu</button>
-          <button id="btn-reset" class="big-btn ghost">↺ Reset</button>
-        </div>
-        <div class="hotkey-hint">Phím tắt: <kbd>Space</kbd> bắt đầu/dừng · <kbd>R</kbd> reset</div>
+        <div class="timer-state" id="timer-state">Đã đặt</div>
       </section>
     </main>
 
@@ -67,9 +55,6 @@
       <span class="brand">Learn to Leap</span>
       <span class="status-pill" id="status">connecting</span>
     </footer>
-
-    <!-- Hiệu ứng overlay khi Start/Stop -->
-    <div id="fx-overlay" class="fx-overlay"></div>
   </div>
 
   <script type="module" src="js/display.js"></script>
