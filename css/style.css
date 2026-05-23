@@ -533,6 +533,153 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   background: radial-gradient(circle at center, rgba(124,58,237,.55), rgba(0,0,0,0) 60%);
 }
 
+/* =================================================================
+   FX: Toast notifications
+   ================================================================= */
+.toast-stack {
+  position: fixed; top: 16px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 10px;
+  align-items: center;
+  pointer-events: none;
+  z-index: 1500;
+}
+.toast {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 22px;
+  background: #fff;
+  border: 2px solid var(--p-200);
+  border-radius: 16px;
+  font-weight: 700; font-size: 18px;
+  color: var(--ink);
+  box-shadow: 0 18px 50px rgba(91, 33, 182, 0.25);
+  opacity: 0; transform: translateY(-30px) scale(.9);
+  transition: opacity .35s ease, transform .35s cubic-bezier(.22,1.4,.36,1);
+  min-width: 280px; max-width: 70vw;
+  backdrop-filter: blur(10px);
+}
+.toast.show { opacity: 1; transform: translateY(0) scale(1); }
+.toast.hide { opacity: 0; transform: translateY(-20px) scale(.95); }
+.toast-icon { font-size: 26px; line-height: 1; }
+.toast-msg { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.toast-start   { border-color: var(--green-500); background: linear-gradient(135deg, #f0fdf4, #fff); color: var(--green-700); }
+.toast-stop    { border-color: var(--red-500);   background: linear-gradient(135deg, #fef2f2, #fff); color: var(--red-700); }
+.toast-success { border-color: var(--green-500); background: #f0fdf4; color: var(--green-700); }
+.toast-warn    { border-color: #f59e0b;           background: #fffbeb; color: #b45309; }
+.toast-danger  { border-color: var(--red-500);   background: #fef2f2; color: var(--red-700); }
+.toast-team    { border-color: var(--p-500);     background: linear-gradient(135deg, #faf5ff, #fff); color: var(--p-700); }
+.toast-info    { border-color: var(--p-300); }
+
+/* =================================================================
+   FX: Screen shake (gắn vào #display-root)
+   ================================================================= */
+@keyframes shakeSm {
+  0%,100% { transform: translate(0,0); }
+  25% { transform: translate(-3px, 1px); }
+  50% { transform: translate(3px, -1px); }
+  75% { transform: translate(-2px, -2px); }
+}
+@keyframes shakeMd {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-6px, 2px) rotate(-.4deg); }
+  20% { transform: translate(6px, -3px) rotate(.4deg); }
+  30% { transform: translate(-5px, 4px); }
+  40% { transform: translate(5px, -2px); }
+  50% { transform: translate(-3px, 3px); }
+  60% { transform: translate(3px, -4px); }
+  70% { transform: translate(-2px, 2px); }
+}
+@keyframes shakeLg {
+  0%,100% { transform: translate(0,0); }
+  10% { transform: translate(-10px, 4px) rotate(-1deg); }
+  20% { transform: translate(10px, -6px) rotate(1deg); }
+  30% { transform: translate(-9px, 6px) rotate(-.7deg); }
+  40% { transform: translate(9px, -4px) rotate(.7deg); }
+  50% { transform: translate(-6px, 5px); }
+  60% { transform: translate(6px, -7px); }
+  70% { transform: translate(-4px, 3px); }
+  80% { transform: translate(4px, -2px); }
+}
+.shake-sm { animation: shakeSm .35s cubic-bezier(.36,.07,.19,.97) both; }
+.shake-md { animation: shakeMd .55s cubic-bezier(.36,.07,.19,.97) both; }
+.shake-lg { animation: shakeLg .7s  cubic-bezier(.36,.07,.19,.97) both; }
+
+/* =================================================================
+   FX: Confetti
+   ================================================================= */
+.confetti-layer {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 800;
+}
+.confetti {
+  position: absolute;
+  top: -40px;
+  animation: confettiFall 2.5s ease-in forwards;
+  will-change: transform, opacity;
+}
+.confetti.dot {
+  width: 12px; height: 12px;
+  border-radius: 3px;
+}
+.confetti.emoji {
+  text-shadow: 0 4px 12px rgba(0,0,0,.15);
+}
+@keyframes confettiFall {
+  0%   { transform: translate(0, -10vh) rotate(0); opacity: 0; }
+  10%  { opacity: 1; }
+  100% { transform: translate(var(--drift, 0), 110vh) rotate(var(--rot, 360deg)); opacity: 1; }
+}
+
+/* =================================================================
+   FX: Glitch (RGB split text)
+   ================================================================= */
+@keyframes glitchAnim {
+  0%   { transform: translate(0,0); text-shadow: 0 0 transparent; }
+  10%  { transform: translate(-4px, 2px); text-shadow: 4px 0 #ef4444, -4px 0 #06b6d4; }
+  20%  { transform: translate(4px, -2px); text-shadow: -4px 0 #ec4899, 4px 0 #facc15; }
+  30%  { transform: translate(-3px, -2px); text-shadow: 3px 0 #ef4444, -3px 0 #22d3ee; }
+  40%  { transform: translate(3px, 3px); text-shadow: -3px 0 #f59e0b, 3px 0 #ec4899; }
+  50%  { transform: translate(-2px, 0); text-shadow: 2px 0 #ef4444, -2px 0 #06b6d4; }
+  60%  { transform: translate(2px, -1px); text-shadow: 0 0 transparent; }
+  100% { transform: translate(0,0); text-shadow: 0 0 transparent; }
+}
+.glitch {
+  animation: glitchAnim .7s steps(2, end) 2;
+}
+
+/* =================================================================
+   FX: Countdown numbers 5..4..3..2..1
+   ================================================================= */
+.countdown-overlay {
+  position: fixed; inset: 0;
+  pointer-events: none;
+  display: grid; place-items: center;
+  z-index: 900;
+}
+.countdown-num {
+  font-family: var(--mono);
+  font-size: 35vw;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--red-500);
+  text-shadow: 0 0 60px rgba(239,68,68,.6), 0 0 120px rgba(239,68,68,.4);
+  animation: cdPop .85s cubic-bezier(.22,1.4,.36,1) both;
+  -webkit-text-stroke: 4px #fff;
+}
+@keyframes cdPop {
+  0%   { transform: scale(2); opacity: 0; }
+  15%  { transform: scale(.9); opacity: 1; }
+  30%  { transform: scale(1.05); }
+  75%  { transform: scale(1); opacity: 1; }
+  100% { transform: scale(.5); opacity: 0; }
+}
+
+/* =================================================================
+   Error box
+   ================================================================= */
 .err-box {
   position: fixed;
   left: 16px; right: 16px; bottom: 16px;

@@ -2,6 +2,7 @@
 // Timer chạy NGAY và độc lập. Supabase load lazy, fail thì timer vẫn OK.
 
 import { initTimer } from "./timer.js";
+import { toast } from "./fx.js";
 
 const params = new URLSearchParams(location.search);
 const arenaNo = parseInt(params.get("arena") || "1", 10);
@@ -28,11 +29,27 @@ function showErr(msg) {
   errBox.textContent = "[Supabase] " + msg;
 }
 
+let lastTeam1 = "", lastTeam2 = "", lastRound = "", isFirstRender = true;
 function renderTeams(state) {
   const round = state.round || "scoring";
   const a = (state.arenas && state.arenas[arenaNo]) || {};
   const team1 = (a.team1 || "").trim();
   const team2 = (a.team2 || "").trim();
+
+  // ===== Toast khi có đội mới (không hiện lần load đầu) =====
+  if (!isFirstRender) {
+    if (round !== lastRound) {
+      toast(`Chuyển sang ${round === "knockout" ? "Vòng đối kháng" : "Vòng tính điểm"}`, "info", 2500);
+    }
+    if (team1 && team1 !== lastTeam1) {
+      toast(`Đội mới: ${team1}`, "team", 3000);
+    }
+    if (round === "knockout" && team2 && team2 !== lastTeam2) {
+      toast(`Đối thủ: ${team2}`, "team", 3000);
+    }
+  }
+  lastTeam1 = team1; lastTeam2 = team2; lastRound = round;
+  isFirstRender = false;
 
   roundTagEl.textContent = round === "knockout" ? "Vòng đối kháng" : "Vòng tính điểm";
   roundTagEl.dataset.round = round;
