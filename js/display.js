@@ -264,16 +264,12 @@ function renderKnockout() {
   getKoNameEl(2).textContent = koState.team2 || "—";
   getKoNameEl(1).classList.toggle("empty", !koState.team1);
   getKoNameEl(2).classList.toggle("empty", !koState.team2);
-  getKoScoreEl(1).textContent = koState.score1;
-  getKoScoreEl(2).textContent = koState.score2;
+  // Score là <input> — không ghi đè khi đang focus (tránh phá lúc gõ)
+  const s1 = getKoScoreEl(1), s2 = getKoScoreEl(2);
+  if (s1 && document.activeElement !== s1) s1.value = koState.score1;
+  if (s2 && document.activeElement !== s2) s2.value = koState.score2;
 
-  // highlight leader
-  qsa(".ko-side").forEach(el => el.classList.remove("leading"));
-  if (koState.team1 && koState.team2) {
-    if (koState.score1 > koState.score2) document.querySelector('.ko-side[data-side="1"]')?.classList.add("leading");
-    else if (koState.score2 > koState.score1) document.querySelector('.ko-side[data-side="2"]')?.classList.add("leading");
-  }
-
+  updateLeadingHighlight();
   renderEliminationList();
 }
 
@@ -324,20 +320,45 @@ function renderEliminationList() {
   }
 });
 
-qsa(".ko-score-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const side = parseInt(btn.dataset.side, 10);
-    const delta = parseInt(btn.dataset.delta, 10);
-    const key = side === 1 ? "score1" : "score2";
-    koState[key] = Math.max(0, (koState[key] || 0) + delta);
-    saveKoState();
-    renderKnockout();
-    if (delta > 0) {
-      soundDing();
-      confettiBurst(15);
+// Score inputs — wire on input + blur
+qsa(".ko-score-input").forEach(input => {
+  const side = parseInt(input.dataset.side, 10);
+  const key = side === 1 ? "score1" : "score2";
+
+  // Live update khi gõ (mỗi keystroke)
+  input.addEventListener("input", () => {
+    const raw = input.value.trim();
+    if (raw === "") { koState[key] = 0; }
+    else {
+      const n = parseInt(raw, 10);
+      if (!isNaN(n) && n >= 0) koState[key] = n;
     }
+    saveKoState();
+    // chỉ update highlight + xếp hạng, không re-render input đang focus
+    updateLeadingHighlight();
   });
+
+  // Khi rời input → chuẩn hoá hiển thị (vd "007" → "7")
+  input.addEventListener("blur", () => {
+    const n = Math.max(0, parseInt(input.value, 10) || 0);
+    koState[key] = n;
+    input.value = n;
+    saveKoState();
+  });
+
+  // Chọn hết khi focus để dễ nhập đè
+  input.addEventListener("focus", () => input.select());
 });
+
+function updateLeadingHighlight() {
+  qsa(".ko-side").forEach(el => el.classList.remove("leading"));
+  if (koState.team1 && koState.team2) {
+    if (koState.score1 > koState.score2)
+      document.querySelector('.ko-side[data-side="1"]')?.classList.add("leading");
+    else if (koState.score2 > koState.score1)
+      document.querySelector('.ko-side[data-side="2"]')?.classList.add("leading");
+  }
+}
 
 btnResetMatch.addEventListener("click", () => {
   if (!confirm("Xoá tỷ số và đội đã chọn? (Đội đã loại vẫn giữ nguyên)")) return;

@@ -62,9 +62,8 @@
               </div>
               <div class="ko-name" id="ko-name-1">—</div>
               <div class="ko-score-row">
-                <button class="ko-score-btn minus" data-side="1" data-delta="-1">−</button>
-                <span class="ko-score" id="ko-score-1">0</span>
-                <button class="ko-score-btn plus" data-side="1" data-delta="1">+</button>
+                <input type="number" inputmode="numeric" class="ko-score-input"
+                       id="ko-score-1" data-side="1" value="0" min="0" max="9999" />
               </div>
             </div>
 
@@ -81,9 +80,8 @@
               </div>
               <div class="ko-name" id="ko-name-2">—</div>
               <div class="ko-score-row">
-                <button class="ko-score-btn minus" data-side="2" data-delta="-1">−</button>
-                <span class="ko-score" id="ko-score-2">0</span>
-                <button class="ko-score-btn plus" data-side="2" data-delta="1">+</button>
+                <input type="number" inputmode="numeric" class="ko-score-input"
+                       id="ko-score-2" data-side="2" value="0" min="0" max="9999" />
               </div>
             </div>
           </div>
@@ -171,6 +169,6 @@
       box.textContent = `[JS ERROR] ${e.message}\n${e.filename}:${e.lineno}`;
     });
   </script>
-  <script type="module" src="js/display.js?v=14"></script>
+  <script type="module" src="js/display.js?v=15"></script>
 </body>
 </html>

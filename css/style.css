@@ -559,36 +559,39 @@ a.home-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
   display: flex; align-items: center; gap: .8vw;
   margin-top: .3vh;
 }
-.ko-score {
+.ko-score-input {
   font-family: var(--mono);
   font-size: 3vw; font-weight: 700;
   color: var(--ink);
-  min-width: 4vw; text-align: center;
+  width: 8vw; min-width: 110px;
+  text-align: center;
   font-variant-numeric: tabular-nums;
+  border: 2px solid var(--p-200);
+  background: #fff;
+  border-radius: 14px;
+  padding: .4vw .6vw;
+  letter-spacing: .02em;
+  transition: border-color .15s, box-shadow .15s, color .2s, background .2s;
+  -moz-appearance: textfield;          /* hide spinners FF */
 }
-.ko-side.leading .ko-score { color: var(--green-700); }
-.ko-score-btn {
-  border: 0;
-  width: 2.6vw; height: 2.6vw;
-  min-width: 42px; min-height: 42px;
-  border-radius: 50%;
-  font-size: 1.4vw; font-weight: 800;
-  cursor: pointer;
-  display: inline-grid; place-items: center;
-  transition: transform .08s, box-shadow .15s;
-  color: #fff;
+.ko-score-input::-webkit-outer-spin-button,
+.ko-score-input::-webkit-inner-spin-button {
+  -webkit-appearance: none; margin: 0;  /* hide spinners Chrome */
 }
-.ko-score-btn:active { transform: scale(.92); }
-.ko-score-btn.plus  {
-  background: linear-gradient(135deg, var(--green-500), var(--green-700));
-  box-shadow: 0 4px 12px rgba(34,197,94,.32);
+.ko-score-input:hover { border-color: var(--p-400); }
+.ko-score-input:focus {
+  outline: 0;
+  border-color: var(--p-500);
+  box-shadow: 0 0 0 5px rgba(124,58,237,.18);
 }
-.ko-score-btn.plus:hover { box-shadow: 0 6px 16px rgba(34,197,94,.45); }
-.ko-score-btn.minus {
-  background: linear-gradient(135deg, #f87171, #b91c1c);
-  box-shadow: 0 4px 12px rgba(239,68,68,.3);
+.ko-side.leading .ko-score-input {
+  color: var(--green-700);
+  border-color: var(--green-500);
+  background: linear-gradient(135deg, #f0fdf4, #fff);
 }
-.ko-score-btn.minus:hover { box-shadow: 0 6px 16px rgba(239,68,68,.4); }
+.ko-side.leading .ko-score-input:focus {
+  box-shadow: 0 0 0 5px rgba(34,197,94,.2);
+}
 .ko-vs-divider {
   display: flex; align-items: center; justify-content: center;
   position: relative;
