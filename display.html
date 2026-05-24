@@ -13,35 +13,26 @@
   <div id="display-root" class="display-root">
     <header class="d-header">
       <div class="arena-tag">Sa bàn <span id="arena-no">–</span></div>
-      <div class="round-tag" id="round-tag">Đang tải…</div>
+      <div class="round-tag" id="round-tag">Vòng <span id="round-num">1</span> / <span id="round-total">13</span></div>
       <button id="btn-mute" class="mute-btn" title="Tắt/bật âm thanh">🔊</button>
-      <span class="status-pill" id="status">connecting</span>
     </header>
 
     <main class="d-split">
-      <!-- LEFT: team info -->
+      <!-- LEFT: team info + selector -->
       <section class="d-pane d-team">
-        <div id="view-scoring" class="view view-scoring hidden">
-          <div class="label">Đội thi</div>
-          <div class="team-name big" id="scoring-team">—</div>
+        <div class="team-hero">
+          <div class="label">Đội đang thi đấu</div>
+          <div class="team-name big" id="team-name">—</div>
+          <div class="team-state" id="team-state"></div>
         </div>
 
-        <div id="view-knockout" class="view view-knockout hidden">
-          <div class="ko-stack">
-            <div class="ko-side">
-              <div class="label">Đội 1</div>
-              <div class="team-name" id="ko-team1">—</div>
-            </div>
-            <div class="vs">VS</div>
-            <div class="ko-side">
-              <div class="label">Đội 2</div>
-              <div class="team-name" id="ko-team2">—</div>
-            </div>
-          </div>
+        <div class="team-controls">
+          <button id="btn-prev" class="btn btn-ghost btn-lg nav-btn">← Vòng trước</button>
+          <button id="btn-list" class="btn btn-primary btn-lg">📋 Danh sách</button>
+          <button id="btn-next" class="btn btn-ghost btn-lg nav-btn">Vòng sau →</button>
         </div>
-
-        <div id="view-empty" class="view view-empty">
-          <div class="empty-text">Chờ ban tổ chức cập nhật…</div>
+        <div class="hotkey-hint">
+          <kbd>←</kbd>/<kbd>→</kbd> chuyển vòng · <kbd>L</kbd> mở danh sách
         </div>
       </section>
 
@@ -74,6 +65,18 @@
       <span class="brand">Learn to Leap · RoboGMB</span>
     </footer>
 
+    <!-- ===== Team list modal ===== -->
+    <div id="team-modal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3>Sa bàn <span id="modal-arena">–</span> — Lịch thi đấu</h3>
+          <button id="modal-close" class="modal-close">✕</button>
+        </div>
+        <ol id="team-list" class="team-list"></ol>
+      </div>
+    </div>
+
     <div id="fx-overlay" class="fx-overlay"></div>
     <div id="confetti-layer" class="confetti-layer"></div>
     <div id="countdown-overlay" class="countdown-overlay"></div>
@@ -82,20 +85,13 @@
   </div>
 
   <script>
-    // Hiện lỗi JS trực tiếp lên màn hình (cho dễ debug khi không mở được F12)
     window.addEventListener("error", (e) => {
       const box = document.getElementById("err-box");
       if (!box) return;
       box.classList.remove("hidden");
       box.textContent = `[JS ERROR] ${e.message}\n${e.filename}:${e.lineno}`;
     });
-    window.addEventListener("unhandledrejection", (e) => {
-      const box = document.getElementById("err-box");
-      if (!box) return;
-      box.classList.remove("hidden");
-      box.textContent = `[PROMISE] ${e.reason?.message || e.reason}`;
-    });
   </script>
-  <script type="module" src="js/display.js?v=11"></script>
+  <script type="module" src="js/display.js?v=12"></script>
 </body>
 </html>
