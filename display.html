@@ -18,25 +18,30 @@
     </header>
 
     <main class="d-split">
-      <!-- LEFT: team info + selector -->
+      <!-- LEFT: team info -->
       <section class="d-pane d-team">
+        <!-- HERO: tên đội = trung tâm thị giác -->
         <div class="team-hero">
-          <div class="label">Đội đang thi đấu</div>
           <div class="team-name big" id="team-name">—</div>
           <div class="team-state" id="team-state"></div>
         </div>
 
-        <div class="team-controls">
-          <button id="btn-prev" class="btn btn-ghost btn-lg nav-btn">← Vòng trước</button>
-          <button id="btn-list" class="btn btn-primary btn-lg">📋 Danh sách</button>
-          <button id="btn-next" class="btn btn-ghost btn-lg nav-btn">Vòng sau →</button>
+        <!-- Lượt 1/2/3 -->
+        <div class="attempt-toggle" id="attempt-toggle">
+          <button class="att-btn" data-att="1">Lượt 1</button>
+          <button class="att-btn" data-att="2">Lượt 2</button>
+          <button class="att-btn" data-att="3">Lượt 3</button>
         </div>
-        <div class="hotkey-hint">
-          <kbd>←</kbd>/<kbd>→</kbd> chuyển vòng · <kbd>L</kbd> mở danh sách
+
+        <!-- Nav nhỏ -->
+        <div class="team-nav-mini">
+          <button id="btn-prev" class="mini-btn" title="Vòng trước (←)">◀</button>
+          <button id="btn-list" class="mini-btn mini-list" title="Danh sách (L)">📋</button>
+          <button id="btn-next" class="mini-btn" title="Vòng sau (→)">▶</button>
         </div>
       </section>
 
-      <!-- RIGHT: timer + controls -->
+      <!-- RIGHT: timer -->
       <section class="d-pane d-timer">
         <div class="timer-hero">
           <div class="label">Thời gian</div>
@@ -92,6 +97,6 @@
       box.textContent = `[JS ERROR] ${e.message}\n${e.filename}:${e.lineno}`;
     });
   </script>
-  <script type="module" src="js/display.js?v=12"></script>
+  <script type="module" src="js/display.js?v=13"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
-// display.js — STANDALONE.
-// Mỗi sa bàn có lịch riêng (teams.js), tự chọn vòng. Không phụ thuộc Supabase.
+// display.js — STANDALONE per arena.
 
 import { initTimer } from "./timer.js";
 import { toast } from "./fx.js";
@@ -15,6 +14,7 @@ const roundNumEl = $("round-num");
 const roundTotalEl = $("round-total");
 const teamNameEl = $("team-name");
 const teamStateEl = $("team-state");
+const attemptToggle = $("attempt-toggle");
 const btnPrev = $("btn-prev");
 const btnNext = $("btn-next");
 const btnList = $("btn-list");
@@ -27,7 +27,7 @@ arenaNoEl.textContent = arenaNo;
 modalArena.textContent = arenaNo;
 document.title = `Sa bàn ${arenaNo} · Display`;
 
-// ===== Mute button =====
+// ===== Mute =====
 const muteBtn = $("btn-mute");
 function updateMuteIcon() {
   if (!muteBtn) return;
@@ -37,8 +37,7 @@ function updateMuteIcon() {
 if (muteBtn) {
   updateMuteIcon();
   muteBtn.addEventListener("click", () => {
-    toggleMute();
-    updateMuteIcon();
+    toggleMute(); updateMuteIcon();
     if (!isMuted()) soundDing();
   });
 }
@@ -48,9 +47,25 @@ const TEAMS = getTeams(arenaNo);
 const TOTAL = TEAMS.length;
 roundTotalEl.textContent = TOTAL;
 
+// ===== State + persistence =====
 const ROUND_KEY = `round-arena-${arenaNo}`;
+const ATTEMPT_KEY = `attempt-arena-${arenaNo}`;  // lưu theo {roundN: attemptM}
+
 let currentRound = parseInt(localStorage.getItem(ROUND_KEY) || "1", 10);
 if (currentRound < 1 || currentRound > TOTAL) currentRound = 1;
+
+let attemptMap = {};
+try { attemptMap = JSON.parse(localStorage.getItem(ATTEMPT_KEY) || "{}"); }
+catch (_) { attemptMap = {}; }
+
+function getAttempt(round) {
+  const a = attemptMap[round];
+  return (a && a >= 1 && a <= 3) ? a : 1;
+}
+function setAttemptState(round, att) {
+  attemptMap[round] = att;
+  localStorage.setItem(ATTEMPT_KEY, JSON.stringify(attemptMap));
+}
 
 let isFirstRender = true;
 
@@ -63,37 +78,60 @@ function setRound(n, opts = {}) {
   render();
   if (changed && !isFirstRender && !opts.silent) {
     const team = TEAMS[n - 1];
-    if (isRest(team)) {
-      toast(`Vòng ${n}: Nghỉ`, "info", 2200);
-    } else {
-      toast(`Vòng ${n}: ${team}`, "team", 2500);
+    if (isRest(team)) toast(`Vòng ${n}: Nghỉ`, "info", 2000);
+    else {
+      toast(`Vòng ${n}: ${team}`, "team", 2400);
       soundDing();
     }
   }
   isFirstRender = false;
 }
 
+function setAttempt(att, opts = {}) {
+  if (att < 1 || att > 3) return;
+  if (getAttempt(currentRound) === att) return;
+  setAttemptState(currentRound, att);
+  renderAttempt();
+  if (!opts.silent) {
+    toast(`Lượt ${att}`, "info", 1500);
+    soundDing();
+  }
+}
+
 function render() {
   roundNumEl.textContent = currentRound;
   const team = TEAMS[currentRound - 1] || "";
+
   if (isRest(team)) {
     teamNameEl.textContent = "— Nghỉ —";
     teamNameEl.classList.add("rest");
     teamStateEl.textContent = "Không có đội thi đấu vòng này";
+    attemptToggle.classList.add("disabled");
   } else {
     if (teamNameEl.textContent !== team) {
       teamNameEl.textContent = team;
-      // pop animation restart
       teamNameEl.style.animation = "none";
       teamNameEl.offsetHeight;
       teamNameEl.style.animation = "";
     }
     teamNameEl.classList.remove("rest");
     teamStateEl.textContent = "";
+    attemptToggle.classList.remove("disabled");
   }
+
   btnPrev.disabled = currentRound <= 1;
   btnNext.disabled = currentRound >= TOTAL;
+
+  renderAttempt();
   renderList();
+}
+
+function renderAttempt() {
+  const cur = getAttempt(currentRound);
+  attemptToggle.querySelectorAll(".att-btn").forEach(b => {
+    const a = parseInt(b.dataset.att, 10);
+    b.classList.toggle("active", a === cur);
+  });
 }
 
 function renderList() {
@@ -110,7 +148,6 @@ function renderList() {
       </li>
     `;
   }).join("");
-  // wire clicks
   teamListEl.querySelectorAll(".team-item").forEach(li => {
     li.addEventListener("click", () => {
       const r = parseInt(li.dataset.round, 10);
@@ -120,14 +157,19 @@ function renderList() {
   });
 }
 
-// ===== Navigation =====
+// ===== Wire interactions =====
 btnPrev.addEventListener("click", () => setRound(currentRound - 1));
 btnNext.addEventListener("click", () => setRound(currentRound + 1));
 
-// ===== Modal =====
+attemptToggle.querySelectorAll(".att-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    if (attemptToggle.classList.contains("disabled")) return;
+    setAttempt(parseInt(b.dataset.att, 10));
+  });
+});
+
 function openModal() {
   modal.classList.remove("hidden");
-  // scroll current into view
   setTimeout(() => {
     const cur = teamListEl.querySelector(".team-item.current");
     if (cur) cur.scrollIntoView({ block: "center", behavior: "smooth" });
@@ -138,15 +180,16 @@ btnList.addEventListener("click", openModal);
 modalClose.addEventListener("click", closeModal);
 modal.querySelector(".modal-backdrop").addEventListener("click", closeModal);
 
-// ===== Keyboard =====
 document.addEventListener("keydown", (e) => {
-  // Skip if focused inside an input
   const t = e.target;
   if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA")) return;
-  if (e.key === "ArrowLeft")  { setRound(currentRound - 1); }
-  else if (e.key === "ArrowRight") { setRound(currentRound + 1); }
-  else if (e.key === "l" || e.key === "L") { openModal(); }
-  else if (e.key === "Escape") { closeModal(); }
+  if (e.key === "ArrowLeft")       setRound(currentRound - 1);
+  else if (e.key === "ArrowRight") setRound(currentRound + 1);
+  else if (e.key === "l" || e.key === "L") openModal();
+  else if (e.key === "Escape")     closeModal();
+  else if (e.key === "1") setAttempt(1);
+  else if (e.key === "2") setAttempt(2);
+  else if (e.key === "3") setAttempt(3);
 });
 
 // ===== Boot =====
