@@ -40,3 +40,19 @@ export function getTeams(arenaNo) {
 export function isRest(name) {
   return !name || !name.trim();
 }
+
+// ============================================================
+// 16 đội vượt qua vòng tính điểm → vào vòng Đối kháng
+// (Top 4 từ mỗi bảng)
+// ============================================================
+export const KNOCKOUT_TEAMS = [
+  // Bảng 1
+  "THANH TRÌ 3", "QT PRIME ALPHA", "NGUYÊN VIỆT XUÂN 2", "VĨNH HƯNG 5",
+  // Bảng 2
+  "NHA TRANG 2", "CHU VĂN AN 1", "NGUYÊN VIỆT XUÂN 1", "TÂN MAI 2",
+  // Bảng 3
+  "NHA TRANG 1", "QT PRIME BETA", "CHU VĂN AN 3", "THANH TRÌ 4",
+  // Bảng 4
+  "XUÂN ĐỈNH 3", "VĨNH HƯNG 2", "DỊCH VỌNG", "CHU VĂN AN 2"
+];
+

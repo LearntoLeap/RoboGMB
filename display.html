@@ -13,32 +13,88 @@
   <div id="display-root" class="display-root">
     <header class="d-header">
       <div class="arena-tag">Sa bàn <span id="arena-no">–</span></div>
+
+      <!-- Mode toggle: Tính điểm / Đối kháng -->
+      <div class="mode-toggle" id="mode-toggle">
+        <button class="mode-btn active" data-mode="scoring">Tính điểm</button>
+        <button class="mode-btn" data-mode="knockout">Đối kháng</button>
+      </div>
+
+      <!-- Scoring round indicator (chỉ hiện ở scoring mode) -->
       <div class="round-tag" id="round-tag">Vòng <span id="round-num">1</span> / <span id="round-total">13</span></div>
+
       <button id="btn-mute" class="mute-btn" title="Tắt/bật âm thanh">🔊</button>
     </header>
 
     <main class="d-split">
       <!-- LEFT: team info -->
       <section class="d-pane d-team">
-        <!-- HERO: tên đội = trung tâm thị giác -->
-        <div class="team-hero">
-          <div class="team-name big" id="team-name">—</div>
-          <div class="team-state" id="team-state"></div>
+
+        <!-- ========== SCORING MODE ========== -->
+        <div class="mode-content" data-mode="scoring">
+          <div class="team-hero">
+            <div class="team-name big" id="team-name">—</div>
+            <div class="team-state" id="team-state"></div>
+          </div>
+
+          <div class="attempt-toggle" id="attempt-toggle">
+            <button class="att-btn" data-att="1">Lượt 1</button>
+            <button class="att-btn" data-att="2">Lượt 2</button>
+            <button class="att-btn" data-att="3">Lượt 3</button>
+          </div>
+
+          <div class="team-nav-mini">
+            <button id="btn-prev" class="mini-btn" title="Vòng trước (←)">◀</button>
+            <button id="btn-list" class="mini-btn mini-list" title="Danh sách (L)">📋</button>
+            <button id="btn-next" class="mini-btn" title="Vòng sau (→)">▶</button>
+          </div>
         </div>
 
-        <!-- Lượt 1/2/3 -->
-        <div class="attempt-toggle" id="attempt-toggle">
-          <button class="att-btn" data-att="1">Lượt 1</button>
-          <button class="att-btn" data-att="2">Lượt 2</button>
-          <button class="att-btn" data-att="3">Lượt 3</button>
+        <!-- ========== KNOCKOUT MODE ========== -->
+        <div class="mode-content hidden" data-mode="knockout">
+          <div class="ko-layout">
+            <div class="ko-side" data-side="1">
+              <div class="ko-side-head">
+                <span class="ko-side-label">Đội 1</span>
+                <select class="ko-select" data-side="1">
+                  <option value="">— Chọn đội —</option>
+                </select>
+              </div>
+              <div class="ko-name" id="ko-name-1">—</div>
+              <div class="ko-score-row">
+                <button class="ko-score-btn minus" data-side="1" data-delta="-1">−</button>
+                <span class="ko-score" id="ko-score-1">0</span>
+                <button class="ko-score-btn plus" data-side="1" data-delta="1">+</button>
+              </div>
+            </div>
+
+            <div class="ko-vs-divider">
+              <span class="ko-vs">VS</span>
+            </div>
+
+            <div class="ko-side" data-side="2">
+              <div class="ko-side-head">
+                <span class="ko-side-label">Đội 2</span>
+                <select class="ko-select" data-side="2">
+                  <option value="">— Chọn đội —</option>
+                </select>
+              </div>
+              <div class="ko-name" id="ko-name-2">—</div>
+              <div class="ko-score-row">
+                <button class="ko-score-btn minus" data-side="2" data-delta="-1">−</button>
+                <span class="ko-score" id="ko-score-2">0</span>
+                <button class="ko-score-btn plus" data-side="2" data-delta="1">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="ko-actions">
+            <button id="btn-reset-match" class="btn btn-ghost btn-sm">↺ Xoá tỷ số</button>
+            <button id="btn-eliminate" class="btn btn-danger btn-sm">⚠️ Loại đội thua</button>
+            <button id="btn-eliminate-modal" class="btn btn-ghost btn-sm">📋 Danh sách 16 đội</button>
+          </div>
         </div>
 
-        <!-- Nav nhỏ -->
-        <div class="team-nav-mini">
-          <button id="btn-prev" class="mini-btn" title="Vòng trước (←)">◀</button>
-          <button id="btn-list" class="mini-btn mini-list" title="Danh sách (L)">📋</button>
-          <button id="btn-next" class="mini-btn" title="Vòng sau (→)">▶</button>
-        </div>
       </section>
 
       <!-- RIGHT: timer -->
@@ -70,7 +126,7 @@
       <span class="brand">Learn to Leap · RoboGMB</span>
     </footer>
 
-    <!-- ===== Team list modal ===== -->
+    <!-- ===== Scoring team list modal ===== -->
     <div id="team-modal" class="modal hidden">
       <div class="modal-backdrop"></div>
       <div class="modal-box">
@@ -79,6 +135,23 @@
           <button id="modal-close" class="modal-close">✕</button>
         </div>
         <ol id="team-list" class="team-list"></ol>
+      </div>
+    </div>
+
+    <!-- ===== Knockout 16 teams modal ===== -->
+    <div id="ko-modal" class="modal hidden">
+      <div class="modal-backdrop" data-close-ko></div>
+      <div class="modal-box">
+        <div class="modal-head">
+          <h3>16 đội vào Vòng đối kháng</h3>
+          <button data-close-ko class="modal-close">✕</button>
+        </div>
+        <p class="modal-sub">Bấm vào đội để đánh dấu <strong>đã bị loại</strong>. Đội loại sẽ ẩn khỏi droplist.</p>
+        <ul id="ko-team-list" class="ko-team-list"></ul>
+        <div class="modal-foot">
+          <button id="ko-reset-elim" class="btn btn-ghost btn-sm">Khôi phục tất cả</button>
+          <span class="ko-stats" id="ko-stats">—</span>
+        </div>
       </div>
     </div>
 
@@ -97,6 +170,6 @@
       box.textContent = `[JS ERROR] ${e.message}\n${e.filename}:${e.lineno}`;
     });
   </script>
-  <script type="module" src="js/display.js?v=13"></script>
+  <script type="module" src="js/display.js?v=14"></script>
 </body>
 </html>
